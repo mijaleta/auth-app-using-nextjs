@@ -2,6 +2,8 @@ import NextAuth, { NextAuthOptions, DefaultSession, Session } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import { JWT } from "next-auth/jwt";
 
 // Extend the built-in types
@@ -13,7 +15,12 @@ declare module "next-auth" {
   }
 }
 
-const prisma = new PrismaClient();
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
